@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Secret Vault VR</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow: hidden;
+        }
+        .interface {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 300px;
+            z-index: 1;
+        }
+        .interface h2 {
+            margin: 0 0 20px 0;
+        }
+        input {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #7f8c8d;
+            border-radius: 5px;
+            background-color: #95a5a6;
+            color: #2c3e50;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+        .message {
+            margin: 10px 0;
+            color: #ecf0f1; /* Light grey close to white */
+        }
+        .top-secret {
+            display: none;
+            background-color: #e74c3c;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <a-scene>
+        <a-box position="0 1.6 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
+        <a-sky color="#ECECEC"></a-sky>
+        <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
+
+    <div class="interface" id="createUserContainer">
+        <h2>Create New User</h2>
+        <form id="createUserForm" onsubmit="createUser(event)">
+            <input type="text" id="createName" placeholder="Name" required>
+            <input type="password" id="createPassword" placeholder="Password" required>
+            <button type="submit">Create User</button>
+            <div class="message" id="createUserMessage"></div>
+        </form>
+        <p><a href="#" onclick="showLoginForm()">Already have an account? Login here.</a></p>
+    </div>
+    
+    <div class="interface" id="loginContainer" style="display: none;">
+        <h2>Login</h2>
+        <form id="loginForm" onsubmit="login(event)">
+            <input type="text" id="loginName" placeholder="Name" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <div class="message" id="loginMessage"></div>
+        </form>
+        <p><a href="#" onclick="showCreateUserForm()">Don't have an account? Create one here.</a></p>
+    </div>
+    
+    <div class="interface top-secret" id="secretContent">
+        <h2>Top Secret Information</h2>
+        <p>This is top secret content. Only authorized users can see this.</p>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const user = sessionStorage.getItem('user');
+            if (user) {
+                showSecretContent();
+            } else {
+                showLoginForm();
+            }
+        });
+
+        function showCreateUserForm() {
+            document.getElementById('createUserContainer').style.display = 'block';
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('secretContent').style.display = 'none';
+            document.getElementById('createUserMessage').innerText = '';
+        }
+
+        function showLoginForm() {
+            document.getElementById('createUserContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('secretContent').style.display = 'none';
+            document.getElementById('loginMessage').innerText = '';
+        }
+
+        function createUser(event) {
+            event.preventDefault();
+            const name = document.getElementById('createName').value;
+            const password = document.getElementById('createPassword').value;
+
+            if (name && password) {
+                const hashedPassword = btoa(password); // Simple base64 encoding for demo purposes
+                localStorage.setItem(name, hashedPassword);
+                document.getElementById('createUserMessage').innerText = 'User created successfully!';
+                showLoginForm();
+            } else {
+                document.getElementById('createUserMessage').innerText = 'Please fill in all fields.';
+            }
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const name = document.getElementById('loginName').value;
+            const password = document.getElementById('loginPassword').value;
+            const storedPassword = localStorage.getItem(name);
+
+            if (storedPassword && storedPassword === btoa(password)) {
+                sessionStorage.setItem('user', name);
+                showSecretContent();
+            } else {
+                document.getElementById('loginMessage').innerText = 'Invalid name or password.';
+            }
+        }
+
+        function showSecretContent() {
+            document.getElementById('createUserContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('secretContent').style.display = 'block';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            showLoginForm();
+        }
+    </script>
+</body>
+</html>
